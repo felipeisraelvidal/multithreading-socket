@@ -1,34 +1,39 @@
 import socket
-from bcolors import *
+from bcolors import bcolors
+from utils import constants
+
+def print_help():
+    print(f'{bcolors.BOLD}-> Type your message and press enter to send it')
+    print(f'-> Type ":q" to exit')
+    print(f'-> If you need some help, type "help"{bcolors.ENDC}')
 
 def main():
-    host = '127.0.0.1'
-    port = 5000
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(constants.ADDR)
+    
+    server_host = f'{constants.IP}:{constants.PORT}'
+    print(f'{bcolors.OKGREEN}[CONNECTECD] Connected to server at {server_host}{bcolors.ENDC}')
+    
+    print(f'{bcolors.BOLD}Welcome to the Echo Server{bcolors.ENDC}')
+    print_help()
 
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    dest = (host, port)
-    tcp.connect(dest)
-    print('Connected to server')
+    connected = True
+    while connected:
+        msg = input(f'{bcolors.BOLD}>{bcolors.ENDC} ')
 
-    msg = input(f'{bcolors.BOLD}Send message (Command+X to exit):{bcolors.ENDC} ')
-    while msg != '\x18':
-        # Send message
-        enconded_msg = msg.encode('utf-8')
-        tcp.send(enconded_msg)
-        
-        # Receive message
-        received_msg = tcp.recv(1024)
-        if not received_msg:
-            print(f'{bcolors.FAIL}Invalid Server Response{bcolors.ENDC}')
-            break
+        if msg:
+            if msg == 'help':
+                print_help()
+            else:
+                client.send(msg.encode(constants.FORMAT))
 
-        decoded_msg = received_msg.decode('utf-8');
-        print(f'{bcolors.OKCYAN}-> Server Response: {decoded_msg}{bcolors.ENDC}')
+                if msg == ':q':
+                    connected = False
+                else:
+                    # Receive response from server
+                    msg = client.recv(constants.SIZE).decode(constants.FORMAT)
+                    print(f'{bcolors.OKCYAN}[SERVER] {msg}{bcolors.ENDC}')
 
-        # Get message to send
-        msg = input(f'{bcolors.BOLD}Send message (Command+X to exit):{bcolors.ENDC} ')
-
-    tcp.close()
 
 if __name__ == '__main__':
     main()

@@ -1,46 +1,43 @@
-# socket library
 import socket
+from bcolors import bcolors
+from utils import constants
+import multiprocessing
 
-# Thread module
-from _thread import *
-import threading
+def handle_client(connection, client):
+    username = f'{client[0]}:{client[1]}'
+    print(f'{bcolors.OKGREEN}[NEW CONNECTION] {username} connected{bcolors.ENDC}')
 
-from bcolors import *
+    connected = True
+    while connected:
+        msg = connection.recv(constants.SIZE).decode(constants.FORMAT)
 
-print_lock = threading.Lock()
+        if msg == constants.DISCONNECT_MESSAGE:
+            connected = False
+        else:
+            print(f'{bcolors.OKCYAN}{username}: {msg}{bcolors.ENDC}')
 
-def threaded(connection, client):
-    while True:
-        msg = connection.recv(1024)
-        if not msg:
-            break
-        
-        decoded_msg = msg.decode('utf-8');
-        print(f'{bcolors.OKCYAN}{client[0]}:{client[1]}: {decoded_msg}{bcolors.ENDC}')
+            # Send message to client
+            enconded_msg = msg.encode(constants.FORMAT)
+            connection.send(enconded_msg)
 
-        connection.send(decoded_msg.encode('utf-8'))
-
-    print(f'{bcolors.FAIL}Closing connection: {client[0]}:{client[1]}{bcolors.ENDC}')
     connection.close()
+    print(f'{bcolors.FAIL}[DISCONNECTED] {username} disconnected{bcolors.ENDC}')
 
 def main():
-    host = ''
-    port = 5000
+    print('[STARTING] Server is starting...')
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(constants.ADDR)
+    server.listen()
+    print(f'[LISTENING] 🔥 Server is listening on {constants.IP}:{constants.PORT}')
 
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    orig = (host, port)
-    tcp.bind(orig)
-    tcp.listen(1)
-    print('🔥 Server is listening (waiting for connections)')
-
-    # Forever loop until client closes connection
     while True:
-        connection, client = tcp.accept()
-        print(f'{bcolors.OKGREEN}Connected to {client[0]} on port {client[1]}{bcolors.ENDC}')
+        connection, client = server.accept()
 
-        start_new_thread(threaded, tuple([connection, client]))
-    
-    tcp.close()
+        proc = multiprocessing.Process(target=handle_client, args=(connection, client))
+        proc.start()
+        
+        # thread = threading.Thread(target=handle_client, args=(connection, client))
+        # thread.start()
 
 if __name__ == '__main__':
     main()
