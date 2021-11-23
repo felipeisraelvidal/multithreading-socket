@@ -1,5 +1,5 @@
 IP = '127.0.0.1'
-PORT = 5000
+PORT = 4444
 ADDR = (IP, PORT)
 
 SIZE = 1024
