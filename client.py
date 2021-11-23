@@ -7,6 +7,7 @@ import os
 class SocketClient:
     _client = None
     _connected = False
+    _name = None
     _host = None
     _port = None
 
@@ -28,11 +29,29 @@ class SocketClient:
         print(f'{bcolors.FAIL}[DISCONNECTED] Disconnected from server{bcolors.ENDC}')
 
     def ask_connection(self):
+        # Get host
         self._host = input('Host: ')
-        self._port = input('Port: ')
+        
+        while not self._host:
+            self._host = input('Host: ')
+        
+        # Get port
+        while True:
+            try:
+                self._port = int(input('Port: '))
+                break
+            except:
+                print('Port must be a number')
+        
+        # Get server name (optional)
+        self._name = input('Name: ')
+
+        if not self._name:
+            self._name = 'SERVER'
 
         os.system('cls||clear')
 
+        # Start connection
         self._start()
 
     def _start(self):
@@ -59,7 +78,7 @@ class SocketClient:
                     else:
                         # Receive response from server
                         msg = self._client.recv(constants.SIZE).decode(constants.FORMAT)
-                        print(f'{bcolors.OKCYAN}[SERVER] {msg}{bcolors.ENDC}')
+                        print(f'{bcolors.OKCYAN}[{self._name}] {msg}{bcolors.ENDC}')
     
     def exit_gracefully(self, *args):
         # print("Terminando numa boa", args)
