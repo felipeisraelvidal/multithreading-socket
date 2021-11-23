@@ -2,10 +2,13 @@ import socket
 from bcolors import bcolors
 from utils import constants
 import signal
+import os
 
 class SocketClient:
     _client = None
     _connected = False
+    _host = None
+    _port = None
 
     def __init__(self):
         self._client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,8 +27,16 @@ class SocketClient:
         
         print(f'{bcolors.FAIL}[DISCONNECTED] Disconnected from server{bcolors.ENDC}')
 
-    def start(self):
-        self._client.connect(constants.ADDR)
+    def ask_connection(self):
+        self._host = input('Host: ')
+        self._port = input('Port: ')
+
+        os.system('cls||clear')
+
+        self._start()
+
+    def _start(self):
+        self._client.connect((self._host, int(self._port)))
         
         server_host = f'{constants.IP}:{constants.PORT}'
         print(f'{bcolors.OKGREEN}[CONNECTECD] Connected to server at {server_host}{bcolors.ENDC}')
@@ -61,7 +72,7 @@ class SocketClient:
 
 def main():
     client = SocketClient()
-    client.start()
+    client.ask_connection()
 
 if __name__ == '__main__':
     main()
