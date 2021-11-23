@@ -34,6 +34,5 @@ def main():
                     msg = client.recv(constants.SIZE).decode(constants.FORMAT)
                     print(f'{bcolors.OKCYAN}[SERVER] {msg}{bcolors.ENDC}')
 
-
 if __name__ == '__main__':
     main()
