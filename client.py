@@ -16,8 +16,8 @@ class SocketClient:
 
     def _print_help(self):
         print(f'{bcolors.BOLD}-> Type your message and press enter to send it')
-        print(f'-> Type ":q" to exit')
-        print(f'-> If you need some help, type "help"{bcolors.ENDC}')
+        print(f'-> Type ":q" or Control+C to exit')
+        print(f'-> If you need some help, type "{constants.HELP_MESSAGE}"{bcolors.ENDC}')
 
     def _quit(self, send_message=True):
         if send_message:
@@ -49,7 +49,7 @@ class SocketClient:
             msg = input(f'{bcolors.BOLD}>{bcolors.ENDC} ')
 
             if msg:
-                if msg == 'help':
+                if msg == constants.HELP_MESSAGE:
                     self._print_help()
                 else:
                     self._client.send(msg.encode(constants.FORMAT))
