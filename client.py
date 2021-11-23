@@ -1,38 +1,67 @@
 import socket
 from bcolors import bcolors
 from utils import constants
+import signal
 
-def print_help():
-    print(f'{bcolors.BOLD}-> Type your message and press enter to send it')
-    print(f'-> Type ":q" to exit')
-    print(f'-> If you need some help, type "help"{bcolors.ENDC}')
+class SocketClient:
+    _client = None
+    _connected = False
+
+    def __init__(self):
+        self._client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.setup_exit_signals()
+
+    def _print_help(self):
+        print(f'{bcolors.BOLD}-> Type your message and press enter to send it')
+        print(f'-> Type ":q" to exit')
+        print(f'-> If you need some help, type "help"{bcolors.ENDC}')
+
+    def _quit(self, send_message=True):
+        if send_message:
+            self._client.send(constants.DISCONNECT_MESSAGE.encode(constants.FORMAT))
+
+        self._connected = False
+        
+        print(f'{bcolors.FAIL}[DISCONNECTED] Disconnected from server{bcolors.ENDC}')
+
+    def start(self):
+        self._client.connect(constants.ADDR)
+        
+        server_host = f'{constants.IP}:{constants.PORT}'
+        print(f'{bcolors.OKGREEN}[CONNECTECD] Connected to server at {server_host}{bcolors.ENDC}')
+        
+        print(f'{bcolors.BOLD}Welcome to the Echo Server{bcolors.ENDC}')
+        self._print_help()
+
+        self._connected = True
+        while self._connected:
+            msg = input(f'{bcolors.BOLD}>{bcolors.ENDC} ')
+
+            if msg:
+                if msg == 'help':
+                    self._print_help()
+                else:
+                    self._client.send(msg.encode(constants.FORMAT))
+
+                    if msg == constants.DISCONNECT_MESSAGE:
+                        self._quit(send_message=False)
+                    else:
+                        # Receive response from server
+                        msg = self._client.recv(constants.SIZE).decode(constants.FORMAT)
+                        print(f'{bcolors.OKCYAN}[SERVER] {msg}{bcolors.ENDC}')
+    
+    def exit_gracefully(self, *args):
+        # print("Terminando numa boa", args)
+        self._quit(send_message=True)
+        exit(0)
+    
+    def setup_exit_signals(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
 
 def main():
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(constants.ADDR)
-    
-    server_host = f'{constants.IP}:{constants.PORT}'
-    print(f'{bcolors.OKGREEN}[CONNECTECD] Connected to server at {server_host}{bcolors.ENDC}')
-    
-    print(f'{bcolors.BOLD}Welcome to the Echo Server{bcolors.ENDC}')
-    print_help()
-
-    connected = True
-    while connected:
-        msg = input(f'{bcolors.BOLD}>{bcolors.ENDC} ')
-
-        if msg:
-            if msg == 'help':
-                print_help()
-            else:
-                client.send(msg.encode(constants.FORMAT))
-
-                if msg == ':q':
-                    connected = False
-                else:
-                    # Receive response from server
-                    msg = client.recv(constants.SIZE).decode(constants.FORMAT)
-                    print(f'{bcolors.OKCYAN}[SERVER] {msg}{bcolors.ENDC}')
+    client = SocketClient()
+    client.start()
 
 if __name__ == '__main__':
     main()
