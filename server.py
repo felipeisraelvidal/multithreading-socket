@@ -22,10 +22,10 @@ class SocketServer:
         self._server.listen()
         print(f"[LISTENING] 🔥 Server is listening on {constants.IP}:{constants.PORT}")
     
-    @staticmethod
-    def handle_client(connection, client):
+    def handle_client(self, connection, client):
         username = f"{client[0]}:{client[1]}"
         print(f"{bcolors.OKGREEN}[NEW CONNECTION] {username} connected{bcolors.ENDC}")
+        print(f'{bcolors.HEADER}[CONNECTIONS] {len(self._connections)}{bcolors.ENDC}')
         
         connected = True
         while connected:
@@ -40,19 +40,32 @@ class SocketServer:
                 enconded_msg = msg.encode(constants.FORMAT)
                 connection.send(enconded_msg)
         
-        connection.close()
+        connection.close()    
         print(f'{bcolors.FAIL}[DISCONNECTED] {username} disconnected{bcolors.ENDC}')
+
+        if connection in self._connections:
+            self._connections.remove(connection)
+
+        print(f'[CONNECTIONS] {len(self._connections)}')
     
     def accept_connections(self, executor):
         connection, client = self._server.accept()
         self._connections.append(connection)
         thread = executor.submit(
-            SocketServer.handle_client, connection=connection, client=client
+            self.handle_client, connection=connection, client=client
         )
-        thread.add_done_callback(lambda *args: print("Thread Finished!"))
+        thread.add_done_callback(lambda *args: {})
     
     def exit_gracefully(self, *args):
         # print("Terminando numa boa", args)
+        
+        connections_count = len(self._connections)
+        if connections_count > 0:
+            if connections_count == 1:
+                print(f'\n{bcolors.FAIL}Closing 1 connection{bcolors.ENDC}')
+            else:
+                print(f'\n{bcolors.FAIL}Closing {connections_count} connections{bcolors.ENDC}')
+        
         for conn in self._connections:
             try:
                 conn.close()
