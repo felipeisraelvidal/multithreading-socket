@@ -39,4 +39,4 @@ Quando conectado, você poderá utilizar os seguintes comandos:
 
 - `echo <msg>`: Envia a mensagem para o servidor
 - `help`: Exibe a lista de comandos disponíveis
-- `exit`: Encerra a conexão
+- `quit`: Encerra a conexão
