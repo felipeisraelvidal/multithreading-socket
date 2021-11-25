@@ -81,8 +81,6 @@ class SocketClient:
                 msg = msg.strip(' ').strip('\t')
                 
                 if msg.startswith('echo '):
-                    msg = re.sub('^echo\s+', '', msg)
-                    
                     # Send message to the server
                     self._client.send(msg.encode(constants.FORMAT))
 

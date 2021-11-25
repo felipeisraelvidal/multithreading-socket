@@ -3,6 +3,7 @@ from bcolors import bcolors
 from utils import constants
 import concurrent.futures
 import signal
+import re
 
 class SocketServer:
     _server = None
@@ -30,15 +31,18 @@ class SocketServer:
         connected = True
         while connected:
             msg = connection.recv(constants.SIZE).decode(constants.FORMAT)
-            
-            if msg == constants.DISCONNECT_MESSAGE:
-                connected = False
-            else:
-                print(f"{bcolors.OKCYAN}{username}: {msg}{bcolors.ENDC}")
+
+            if msg:
+                if msg.startswith('echo '):
+                    msg = re.sub('^echo\s+', '', msg)
+
+                    print(f"{bcolors.OKCYAN}{username}: {msg}{bcolors.ENDC}")
                 
-                # Send message to client
-                enconded_msg = msg.encode(constants.FORMAT)
-                connection.send(enconded_msg)
+                    # Send message to client
+                    enconded_msg = msg.encode(constants.FORMAT)
+                    connection.send(enconded_msg)
+                elif msg == constants.DISCONNECT_MESSAGE:
+                    connected = False
         
         connection.close()    
         print(f'{bcolors.FAIL}[DISCONNECTED] {username} disconnected{bcolors.ENDC}')
