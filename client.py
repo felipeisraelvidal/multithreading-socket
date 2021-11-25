@@ -3,6 +3,7 @@ from bcolors import bcolors
 from utils import constants
 import signal
 import os
+import re
 
 class SocketClient:
     _client = None
@@ -16,13 +17,22 @@ class SocketClient:
         self.setup_exit_signals()
 
     def _print_help(self):
-        print(f'{bcolors.BOLD}-> Type your message and press enter to send it')
-        print(f'-> Type ":q" or Control+C to exit')
-        print(f'-> If you need some help, type "{constants.HELP_MESSAGE}"{bcolors.ENDC}')
+        print(f'{bcolors.BOLD}Valid commands:')
+        print(f'  -> echo <msg> \tEnviar mensagem para o servidor')
+        print(f'  -> quit \t\tEncerra conexão com o servidor')
+        print(f'  -> {constants.HELP_MESSAGE} \t\tMostrar ajuda{bcolors.ENDC}')
+
+    def _encode_message(self, msg):
+        return msg.encode(constants.FORMAT)
+
+    def _echo(self, msg):
+        encoded_message = self._encode_message(msg)
+        self._client.send(encoded_message)
 
     def _quit(self, send_message=True):
         if send_message:
-            self._client.send(constants.DISCONNECT_MESSAGE.encode(constants.FORMAT))
+            encoded_message = self._encode_message(constants.DISCONNECT_MESSAGE)
+            self._client.send(encoded_message)
 
         self._connected = False
         
@@ -68,17 +78,24 @@ class SocketClient:
             msg = input(f'{bcolors.BOLD}>{bcolors.ENDC} ')
 
             if msg:
-                if msg == constants.HELP_MESSAGE:
-                    self._print_help()
-                else:
+                msg = msg.strip(' ').strip('\t')
+                
+                if msg.startswith('echo '):
+                    msg = re.sub('^echo\s+', '', msg)
+                    
+                    # Send message to the server
                     self._client.send(msg.encode(constants.FORMAT))
 
-                    if msg == constants.DISCONNECT_MESSAGE:
-                        self._quit(send_message=False)
-                    else:
-                        # Receive response from server
-                        msg = self._client.recv(constants.SIZE).decode(constants.FORMAT)
-                        print(f'{bcolors.OKCYAN}[{self._name}] {msg}{bcolors.ENDC}')
+                    # Receive response from server
+                    msg = self._client.recv(constants.SIZE).decode(constants.FORMAT)
+                    print(f'{bcolors.OKCYAN}[{self._name}] {msg}{bcolors.ENDC}')
+                elif msg == constants.HELP_MESSAGE:
+                    self._print_help()
+                elif msg == constants.DISCONNECT_MESSAGE:
+                    self._quit(send_message=True)
+                else:
+                    # print('Invalid command')
+                    print('server: invalid command. Type \'help\'')
     
     def exit_gracefully(self, *args):
         # print("Terminando numa boa", args)
