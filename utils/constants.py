@@ -1,4 +1,4 @@
-IP = '127.0.0.1'
+IP = ''
 PORT = 4444
 ADDR = (IP, PORT)
 

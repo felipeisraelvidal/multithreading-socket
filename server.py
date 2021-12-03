@@ -21,7 +21,9 @@ class SocketServer:
         print("[STARTING] Server is starting...")
         self._server.bind(constants.ADDR)
         self._server.listen()
-        print(f"[LISTENING] 🔥 Server is listening on {constants.IP}:{constants.PORT}")
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        print(f"[LISTENING] 🔥 Server is listening on {ip_address}:{constants.PORT}")
     
     def handle_client(self, connection, client):
         username = f"{client[0]}:{client[1]}"
