@@ -3,7 +3,6 @@ from utils.bcolors import bcolors
 from utils import constants
 import signal
 import os
-import re
 
 class SocketClient:
     _client = None
