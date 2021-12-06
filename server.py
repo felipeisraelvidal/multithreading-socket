@@ -1,5 +1,5 @@
 import socket
-from utils import bcolors
+from utils.bcolors import bcolors
 from utils import constants
 import concurrent.futures
 import signal
