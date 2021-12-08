@@ -66,7 +66,7 @@ class SocketClient:
     def _start(self):
         self._client.connect((self._host, int(self._port)))
         
-        server_host = f'{constants.IP}:{constants.PORT}'
+        server_host = f'{self._host}:{constants.PORT}'
         print(f'{bcolors.OKGREEN}[CONNECTECD] Connected to server at {server_host}{bcolors.ENDC}')
         
         print(f'{bcolors.BOLD}Welcome to the Echo Server{bcolors.ENDC}')
